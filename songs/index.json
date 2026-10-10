@@ -1,12 +1,5 @@
 [
   {
-    "id": "boliviana",
-    "title": "Boliviana",
-    "artist": "Havana D'Primera",
-    "json": "boliviana.json",
-    "audio": "boliviana.mp3.enc"
-  },
-  {
     "id": "toda_una_vida",
     "title": "Toda Una Vida",
     "artist": "Leoni Torres",
