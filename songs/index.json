@@ -1,5 +1,12 @@
 [
   {
+    "id": "caramelo_con_picante",
+    "title": "Caramelo Con Picante",
+    "artist": "Lazarito Valdés y Bamboleo",
+    "json": "caramelo_con_picante.json",
+    "audio": "caramelo_con_picante.mp3.enc"
+  },
+  {
     "id": "toda_una_vida",
     "title": "Toda Una Vida",
     "artist": "Leoni Torres",
@@ -12,5 +19,12 @@
     "artist": "Habana con Kola",
     "json": "vente_negra.json",
     "audio": "vente_negra.mp3.enc"
+  },
+  {
+    "id": "ya_lo_se",
+    "title": "Ya Lo Se",
+    "artist": "Calle Real",
+    "json": "ya_lo_se.json",
+    "audio": "ya_lo_se.mp3.enc"
   }
 ]
