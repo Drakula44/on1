@@ -1,0 +1,7 @@
+# never commit plaintext audio
+*.mp3
+*.m4a
+*.ogg
+*.wav
+*.flac
+*.aac

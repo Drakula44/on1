@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Trainer</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
+</head>
+<body>
+<div id="lockGate" class="lock-gate" hidden>
+  <form id="lockForm" class="lock-box" autocomplete="off">
+    <h2>One Trainer</h2>
+    <p class="hint">The songs on this site are encrypted. Enter the password you were given.</p>
+    <input id="lockPw" type="password" placeholder="Password" autocomplete="current-password" autofocus>
+    <label class="lock-remember"><input id="lockRemember" type="checkbox"> remember on this device</label>
+    <div class="lock-row">
+      <button id="lockGo" type="submit">Unlock</button>
+      <button id="lockSkip" type="button" title="Play the songs from YouTube instead (approximate timing)">YouTube only</button>
+    </div>
+    <div id="lockMsg" class="lock-msg" aria-live="polite"></div>
+  </form>
+</div>
+<header>
+  <h1>One Trainer <small>find the 1 in salsa</small></h1>
+  <label class="songpick">Song
+    <select id="song"></select>
+  </label>
+  <label class="songpick">Source
+    <select id="source" title="Local mp3: exact timing. YouTube: no audio file needed, timing approximate.">
+      <option value="local">Local mp3 (exact timing)</option>
+      <option value="yt">YouTube (approx. timing)</option>
+    </select>
+  </label>
+  <div id="meta" class="meta"></div>
+</header>
+
+<main>
+  <section class="left">
+    <div class="counter-wrap">
+      <div id="counter" class="counter" aria-live="off">–</div>
+      <div id="counter-hidden" class="counter-hidden" hidden>
+        <div>counter hidden</div>
+        <div class="hint" id="hiddenHint">tap <kbd>J</kbd> on every 1 you hear · <kbd>R</kbd> to reveal</div>
+      </div>
+      <div class="dots" id="dots"></div>
+      <div class="clave-grid" id="claveGrid" hidden title="Clave cells in the current 8-count (amber). The outlined cell is now."></div>
+      <div id="claveFlash" class="clave-flash" hidden>clave</div>
+      <div id="section-now" class="section-now"></div>
+    </div>
+
+    <div class="transport">
+      <button id="play" title="Space">▶ Play</button>
+      <span id="time" class="time">0:00.0 / 0:00</span>
+      <label class="speed">Speed <input id="speed" type="range" min="0.5" max="1.25" step="0.05" value="1"> <output id="speed-out">1.00×</output></label>
+    </div>
+
+    <div id="ytPane" class="ytpane" hidden>
+      <div class="ytbox"><div id="ytPlayer"></div></div>
+      <div class="ytside">
+        <div id="srcNote" class="srcnote" hidden>
+          <b>YouTube timing is approximate.</b> The counter and clicks follow an interpolated copy of the
+          player's clock. It runs smoothly, but what you hear can be a few tens of ms off from it (audio output
+          delay inside the YouTube player), and it can slip for a moment after a seek, a speed change or
+          buffering. If the clicks sound early or late, move <i>click offset</i>. YouTube only offers a few
+          speeds (0.5, 0.75, 1, 1.25 here). During an ad the counter waits for the music. If a whole song
+          is off, fix it with <i>YouTube offset</i> below. For exact timing, use the local mp3.
+          After clicking inside the video, click the page once so the keyboard shortcuts work again.
+        </div>
+        <div class="ytsync" title="Shift this song's beat grid against the YouTube audio. If the music on YouTube comes later than the counter (a longer intro), press −; if it comes earlier, press +. Saved per song.">
+          YouTube offset
+          <button data-ytnudge="-1">−1 s</button><button data-ytnudge="-0.05">−50 ms</button>
+          <output id="ytNudge-out">+0.00 s</output>
+          <button data-ytnudge="0.05">+50 ms</button><button data-ytnudge="1">+1 s</button>
+          <button data-ytnudge="0">reset</button>
+        </div>
+        <div id="ytSync" class="abinfo ytsyncinfo" title="YouTube's own position (getCurrentTime + offset) vs. the app's clock. 'waiting' = YouTube says playing but its time isn't moving (an ad, or buffering): the counter waits too."></div>
+        <div id="ytStatus" class="abinfo"></div>
+      </div>
+    </div>
+
+    <canvas id="zoom" height="120" title="Zoom: the current 8-counts. Big red = 1, blue = 5. Click to seek."></canvas>
+    <canvas id="timeline" height="110" title="Click: seek · Shift-click: set A · Alt/Option-click: set B"></canvas>
+
+    <div class="loop">
+      <button id="setA" title="A">Set A</button>
+      <button id="setB" title="B">Set B</button>
+      <button id="loopToggle" title="L">Loop: off</button>
+      <button id="loop8" title="C">Loop this 8-count</button>
+      <button id="loopPrev" title=",">◀ 8</button>
+      <button id="loopNext" title=".">8 ▶</button>
+      <label><input type="checkbox" id="snap" checked> snap A/B to 1s <kbd>S</kbd></label>
+      <span id="abinfo" class="abinfo"></span>
+    </div>
+
+    <div class="toggles">
+      <label><input type="checkbox" id="hide"> hide counter <kbd>H</kbd></label>
+      <label><input type="checkbox" id="click1"> click on the 1 <kbd>K</kbd></label>
+      <label><input type="checkbox" id="click5"> + soft click on 5</label>
+      <label><input type="checkbox" id="clickAll"> + all beats</label>
+      <label>click vol <input type="range" id="clickVol" min="0" max="1" step="0.05" value="0.6"></label>
+      <label title="Shift the clicks (and the clave click) later (+) or earlier (−). Saved separately for the local mp3 and YouTube.">click offset <input type="range" id="clickLat" min="-300" max="300" step="5" value="0"> <output id="clickLat-out">0 ms</output></label>
+      <button id="flip" title="F">Swap 1 ↔ 5 <kbd>F</kbd></button>
+      <button id="nudgeL" title="Shift+←">count −1</button>
+      <button id="nudgeR" title="Shift+→">count +1</button>
+      <span id="offsetinfo" class="abinfo"></span>
+    </div>
+
+    <div class="toggles clave">
+      <label>Clave <select id="claveMode" title="V cycles">
+        <option value="off">Off</option>
+        <option value="auto">Auto (from the song)</option>
+        <option value="son32">Son 3-2</option>
+        <option value="son23">Son 2-3</option>
+        <option value="rumba32">Rumba 3-2</option>
+        <option value="rumba23">Rumba 2-3</option>
+      </select> <kbd>V</kbd></label>
+      <label><input type="checkbox" id="claveClick"> clave click</label>
+      <label>clave vol <input type="range" id="claveVol" min="0" max="1" step="0.05" value="0.6"></label>
+      <span id="claveInfo" class="abinfo"></span>
+    </div>
+  </section>
+
+  <aside class="right">
+    <div class="panel">
+      <h2>Presets <small>(click to loop)</small></h2>
+      <div id="presets" class="presets"></div>
+      <h3>My presets</h3>
+      <div class="row"><input id="presetName" placeholder="name (default: A–B times)"><button id="savePreset" title="P">Save A–B <kbd>P</kbd></button></div>
+      <div id="userPresets" class="presets"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Tap test <small>tap <kbd>J</kbd> on <span id="tapWhat">the 1</span></small></h2>
+      <div id="tapstats" class="tapstats">No taps yet.</div>
+      <canvas id="taphist" height="70"></canvas>
+      <div class="row">
+        <label>latency comp. <input id="latency" type="number" value="0" step="10" style="width:5em"> ms</label>
+        <label>score taps on <select id="tapTarget"><option value="one">the 1s</option><option value="clave">the clave</option></select></label>
+        <button id="tapReset">Reset</button>
+      </div>
+    </div>
+
+    <div class="panel keys">
+      <h2>Keys</h2>
+      <table>
+        <tr><td><kbd>Space</kbd></td><td>play / pause</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>seek ∓ one 8-count</td></tr>
+        <tr><td><kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd></td><td>shift counting by one beat</td></tr>
+        <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>speed −/+ 0.05 (YouTube: next available speed)</td></tr>
+        <tr><td><kbd>A</kbd> <kbd>B</kbd> <kbd>L</kbd></td><td>set A, set B, loop on/off</td></tr>
+        <tr><td><kbd>C</kbd> <kbd>,</kbd> <kbd>.</kbd></td><td>loop this 8-count, move loop ∓8</td></tr>
+        <tr><td><kbd>S</kbd></td><td>snap A/B to 1s</td></tr>
+        <tr><td><kbd>H</kbd> / <kbd>R</kbd></td><td>hide counter / reveal (toggle)</td></tr>
+        <tr><td><kbd>J</kbd></td><td>tap: "this is the 1" (or a clave hit)</td></tr>
+        <tr><td><kbd>K</kbd></td><td>click on the 1</td></tr>
+        <tr><td><kbd>V</kbd></td><td>cycle clave: off / auto / son 3-2 / son 2-3 / rumba 3-2 / rumba 2-3</td></tr>
+        <tr><td><kbd>F</kbd></td><td>swap 1 ↔ 5 (if the analysis is off)</td></tr>
+        <tr><td><kbd>P</kbd></td><td>save A–B as preset</td></tr>
+        <tr><td><kbd>1</kbd>–<kbd>9</kbd></td><td>jump to preset N</td></tr>
+        <tr><td><kbd>0</kbd> / <kbd>Home</kbd></td><td>back to loop start / song start</td></tr>
+      </table>
+    </div>
+  </aside>
+</main>
+<audio id="audio" preload="auto"></audio>
+<script id="ot-lock" type="application/json">{"v": 1, "kdf": "PBKDF2-SHA256", "iterations": 600000, "salt": "q6yH4zVXzPbR/mu12UGMlQ==", "cipher": "AES-256-GCM", "check": "+MVuzJexq/6FyhGnht/UVKvrFMi6gBehO0D9SkPrn8oTHNb/KnRimLSH"}</script>
+<script src="app.js"></script>
+</body>
+</html>

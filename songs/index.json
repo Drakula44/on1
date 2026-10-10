@@ -1,0 +1,23 @@
+[
+  {
+    "id": "boliviana",
+    "title": "Boliviana",
+    "artist": "Havana D'Primera",
+    "json": "boliviana.json",
+    "audio": "boliviana.mp3.enc"
+  },
+  {
+    "id": "toda_una_vida",
+    "title": "Toda Una Vida",
+    "artist": "Leoni Torres",
+    "json": "toda_una_vida.json",
+    "audio": "toda_una_vida.mp3.enc"
+  },
+  {
+    "id": "vente_negra",
+    "title": "Vente Negra",
+    "artist": "Habana con Kola",
+    "json": "vente_negra.json",
+    "audio": "vente_negra.mp3.enc"
+  }
+]
